@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/vue3';
 </script>
 
 <template>
-    <Head title="Inicio Administrador" />
+    <Head title="Inicio" />
 
     <AuthenticatedLayout>
         <template #header>
@@ -21,7 +21,6 @@ import { Head } from '@inertiajs/vue3';
                     class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
                 >
                     <div class="p-6 text-gray-900">
-                        Admin
                     </div>
                 </div>
             </div>
