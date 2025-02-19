@@ -15,11 +15,21 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->boolean('admin')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
         });
+
+        DB::table('users')->insert([
+            'name' => 'Leila',
+            'email' => 'leila@admin.com',
+            'password' => bcrypt('12345678'),
+            'admin' => true, 
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
