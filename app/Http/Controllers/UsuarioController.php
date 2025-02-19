@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\User;
 use App\Models\Agendamento;
+use App\Models\Servico;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class UsuarioController extends Controller
 {
@@ -18,8 +20,11 @@ class UsuarioController extends Controller
     {
         $user = auth()->user();
 
-        $agendamentos = Agendamento::where('user_id', $user->id)->with('servico', 'user')->get();
-    
+        $agendamentos = Agendamento::where('user_id', $user->id)
+            ->with('servico', 'user')
+            ->orderBy('data_agendamento', 'desc')
+            ->paginate(10);
+
         return Inertia::render('Usuario/Agendamento', [
             'agendamentos' => $agendamentos,
         ]);
@@ -27,46 +32,95 @@ class UsuarioController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('create', User::class);
+        $this->authorize('create', Agendamento::class); 
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'servico_id' => 'required|exists:servicos,id',
+            'nome_cliente' => 'required|string|max:255',
+            'celular' => 'required|string|max:20',
+            'data_agendamento' => 'required|date',
+            'hora' => 'required',
+            'status' => 'required|in:pendente,confirmado,cancelado',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+        $dataAgendamento = $request->data_agendamento;
+        $hora = $request->hora;
+
+        $agendamentoExistente = Agendamento::whereDate('data_agendamento', $dataAgendamento)
+            ->where('hora', $hora)
+            ->exists();
+
+        if ($agendamentoExistente) {
+            return redirect()->route('usuario.agendamentos.index')->with('error', 'Já existe um agendamento nesse horário na mesma data.');
+        }
+
+        Agendamento::create([
+            'servico_id' => $request->servico_id,
+            'user_id' => Auth::id(),  // Usuário logado
+            'nome_cliente' => $request->nome_cliente,
+            'celular' => $request->celular,
+            'data_agendamento' => $dataAgendamento,
+            'hora' => $hora,
+            'status' => $request->status,
         ]);
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário criado com sucesso!');
+        return redirect()->route('usuario.agendamentos.index')->with('success', 'Agendamento criado com sucesso!');
     }
 
-    public function update(Request $request, User $user)
+
+    public function update(Request $request, Agendamento $agendamento)
     {
-        $this->authorize('update', $user);
+        $this->authorize('update', $agendamento); 
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'servico_id' => 'required|exists:servicos,id',
+            'nome_cliente' => 'required|string|max:255',
+            'celular' => 'required|string|max:20',
+            'data_agendamento' => 'required|date',
+            'hora' => 'required',
+            'status' => 'required|in:pendente,confirmado,cancelado',
         ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
+        $dataAgendamento = Carbon::parse($request->data_agendamento);
+        $dataAtual = Carbon::now();
+
+        if ($dataAgendamento->diffInDays($dataAtual) < 2) {
+            return redirect()->route('usuario.agendamentos.index')->with('error', 'Você só pode editar agendamentos com mais de 2 dias de antecedência.');
+        }
+
+        $agendamentoExistente = Agendamento::whereDate('data_agendamento', $request->data_agendamento)
+            ->where('hora', $request->hora)
+            ->where('id', '!=', $agendamento->id) 
+            ->exists();
+
+        if ($agendamentoExistente) {
+            return redirect()->route('usuario.agendamentos.index')->with('error', 'Já existe um agendamento nesse horário na mesma data.');
+        }
+
+        
+        $agendamento->update([
+            'servico_id' => $request->servico_id,
+            'nome_cliente' => $request->nome_cliente,
+            'celular' => $request->celular,
+            'data_agendamento' => $request->data_agendamento,
+            'hora' => $request->hora,
+            'status' => $request->status,
         ]);
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado com sucesso!');
+        return redirect()->route('usuario.agendamentos.index')->with('success', 'Agendamento atualizado com sucesso!');
     }
 
-    public function destroy(User $user)
+
+    public function destroy(Agendamento $agendamento)
     {
-        $this->authorize('delete', $user);
+        $this->authorize('delete', $agendamento);  
 
-        $user->delete();
+        if ($agendamento->user_id !== Auth::id()) {
+            return redirect()->route('usuario.agendamentos.index')->with('error', 'Você não tem permissão para excluir esse agendamento.');
+        }
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário excluído com sucesso!');
+        $agendamento->delete();
+
+        return redirect()->route('usuario.agendamentos.index')->with('success', 'Agendamento excluído com sucesso!');
     }
 }

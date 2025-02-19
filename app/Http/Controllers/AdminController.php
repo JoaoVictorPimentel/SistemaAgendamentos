@@ -21,7 +21,7 @@ class AdminController extends Controller
     {
         $this->authorize('viewAny', Agendamento::class);
 
-        $agendamentos = Agendamento::with(['servico', 'user'])->get();
+        $agendamentos = Agendamento::with(['servico', 'user'])->orderBy('data_agendamento', 'desc')->paginate(10);
         return Inertia::render('Admin/Agendamento', [
             'agendamentos' => $agendamentos,
         ]);
@@ -36,7 +36,7 @@ class AdminController extends Controller
             'nome_cliente' => 'required|string|max:255',
             'celular' => 'required|string|max:20',
             'data_agendamento' => 'required|date',
-            'status' => 'required|in:pendente,confirmado,cancelado',
+            'hora' => 'required',
         ]);
 
         Agendamento::create([
@@ -45,7 +45,7 @@ class AdminController extends Controller
             'nome_cliente' => $request->nome_cliente,
             'celular' => $request->celular,
             'data_agendamento' => $request->data_agendamento,
-            'status' => $request->status,
+            'hora' => $request->hora,
         ]);
 
         return redirect()->route('admin.agendamentos.index')->with('success', 'Agendamento criado com sucesso!');
@@ -70,7 +70,7 @@ class AdminController extends Controller
             'nome_cliente' => 'required|string|max:255',
             'celular' => 'required|string|max:20',
             'data_agendamento' => 'required|date',
-            'status' => 'required|in:pendente,confirmado,cancelado',
+            'hora' => 'required',
         ]);
 
         $agendamento->update([
@@ -78,7 +78,7 @@ class AdminController extends Controller
             'nome_cliente' => $request->nome_cliente,
             'celular' => $request->celular,
             'data_agendamento' => $request->data_agendamento,
-            'status' => $request->status,
+            'hora' => $request->hora,
         ]);
 
         return redirect()->route('admin.agendamentos.index')->with('success', 'Agendamento atualizado com sucesso!');
