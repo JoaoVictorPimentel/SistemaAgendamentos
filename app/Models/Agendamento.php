@@ -15,6 +15,7 @@ class Agendamento extends Model
         'nome_cliente',
         'celular',
         'data_agendamento',
+        'hora',
         'status',
     ];
 
