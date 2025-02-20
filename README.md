@@ -37,6 +37,10 @@ Será necessário dois terminais:
 - npm run dev
 - php artisan server (Acessar o projeto pela url gerada aqui)
 
+# Usuário admin
+- Email: leila@admin.com
+- Senha: 12345678
+
 # Projeto
 - Link para ver o funcionamento completo: https://drive.google.com/file/d/1VKlVLxxiFW-b6SCcywUAIFajId722NRH/view?usp=sharing
   
