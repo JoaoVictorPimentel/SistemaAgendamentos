@@ -11,7 +11,9 @@ Para Administradores: <br>
 
 ## Tecnologias Utilizadas
 - Laravel 11
+- Breeze
 - VueJs 3
+- Inertia
 
 ## Requisitos
 - PHP 8.2
