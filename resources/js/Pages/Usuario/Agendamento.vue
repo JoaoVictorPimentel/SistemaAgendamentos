@@ -11,7 +11,21 @@ const props = defineProps({
     horasDisponiveis: Array,
 });
 
-const hoje = new Date().toISOString().split('T')[0]; 
+const filtroData = ref({
+    de: '',
+    ate: ''
+});
+
+const filtrarAgendamentos = () => {
+    router.get(route('usuario.agendamento'), {
+        de: filtroData.value.de,
+        ate: filtroData.value.ate
+    }, {
+        preserveState: true,
+    });
+};
+
+const hoje = new Date().toISOString().split('T')[0];
 const dataMinima = ref(hoje);
 
 const temMultiplosAgendamentosNaSemana = computed(() => {
@@ -160,8 +174,34 @@ const updateAgendamento = () => {
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-pink-900">
-                        <div v-if="temMultiplosAgendamentosNaSemana" class="alert alert-warning ml-2 bg-pink-50 h-12 flex items-center">
-                            <strong class="ml-2">Aviso:</strong> Você possui mais de um agendamento nesta semana, favor verificar se consegue marcar para a mesma data!
+                        <!-- Filtro -->
+                        <div class="mb-4 flex space-x-2 items-end">
+                            <div>
+                                <label for="data_inicio" class="block text-sm font-medium text-pink-700">Data de
+                                    Início</label>
+                                <input v-model="filtroData.de" type="date" id="data_inicio"
+                                    class="mt-1 block w-32 px-2 py-1 border bg-pink-50 border-pink-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+
+                            <div>
+                                <label for="data_fim" class="block text-sm font-medium text-pink-700">Data de
+                                    Fim</label>
+                                <input v-model="filtroData.ate" type="date" id="data_fim"
+                                    class="mt-1 block w-32 px-2 py-1 border bg-pink-50 border-pink-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+
+                            <div>
+                                <button @click="filtrarAgendamentos"
+                                    class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+                                    Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div v-if="temMultiplosAgendamentosNaSemana"
+                            class="alert alert-warning ml-2 bg-pink-50 h-12 flex items-center">
+                            <strong class="ml-2">Aviso:</strong> Você possui mais de um agendamento nesta semana, favor
+                            verificar se consegue marcar para a mesma data!
                         </div>
                         <table class="min-w-full table-auto">
                             <thead>
@@ -184,7 +224,7 @@ const updateAgendamento = () => {
                                     <td class="px-4 py-2">{{ agendamento.celular }}</td>
                                     <td class="px-4 py-2">{{ new
                                         Date(agendamento.data_agendamento).toLocaleDateString('pt-BR')
-                                    }}</td>
+                                        }}</td>
                                     <td class="px-4 py-2">{{ agendamento.hora }}</td>
                                     <td class="px-4 py-2">{{ agendamento.status }}</td>
                                     <td class="px-4 py-2">
@@ -211,7 +251,7 @@ const updateAgendamento = () => {
 
                             <span class="text-pink-800">Página {{ agendamentos.current_page }} de {{
                                 agendamentos.last_page
-                            }}</span>
+                                }}</span>
 
                             <button @click="goToPage(agendamentos.current_page + 1)"
                                 :disabled="agendamentos.current_page === agendamentos.last_page"
@@ -254,7 +294,8 @@ const updateAgendamento = () => {
 
                     <div class="mb-4">
                         <label for="data_agendamento" class="block text-sm font-medium text-pink-700">Data</label>
-                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento" :min="dataMinima"
+                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento"
+                            :min="dataMinima"
                             class="mt-1 block w-full px-3 py-2 border bg-pink-50 border-pink-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
 

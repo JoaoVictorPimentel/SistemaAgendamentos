@@ -23,23 +23,30 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
 
         $servicos = Servico::all();
 
-        $agendamentos = Agendamento::where('user_id', $user->id)
+        $de = $request->input('de');
+        $ate = $request->input('ate');
+
+        $agendamentosQuery = Agendamento::where('user_id', $user->id)
             ->with('servico', 'user')
             ->orderBy('data_agendamento', 'desc')
-            ->orderBy('hora', 'desc')
-            ->paginate(10);
+            ->orderBy('hora', 'desc');
+
+        if ($de && $ate) {
+            $agendamentosQuery->whereBetween('data_agendamento', [$de, $ate]);
+        }
+
+        $agendamentos = $agendamentosQuery->paginate(10);
 
         return Inertia::render('Usuario/Agendamento', [
             'agendamentos' => $agendamentos,
             'servicos' => $servicos,
         ]);
-
     }
 
     public function store(Request $request)
