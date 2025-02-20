@@ -13,10 +13,40 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        return Inertia::render('Admin/Dashboard');
+        $agendamentos = Agendamento::all();
+        $servicos = Servico::all();
+
+        $agendamentosSemana = $agendamentos->whereBetween('data_agendamento', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $ganhosSemana = $agendamentos->whereBetween('data_agendamento', [now()->startOfWeek(), now()->endOfWeek()])
+            ->sum(function ($agendamento) {
+                return $agendamento->servico ? $agendamento->servico->valor : 0;
+            });
+
+        $agendamentosMes = $agendamentos->whereBetween('data_agendamento', [now()->startOfMonth(), now()->endOfMonth()])->count();
+        $ganhosMes = $agendamentos->whereBetween('data_agendamento', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum(function ($agendamento) {
+                return $agendamento->servico ? $agendamento->servico->valor : 0;
+            });
+
+        $agendamentosAno = $agendamentos->whereBetween('data_agendamento', [now()->startOfYear(), now()->endOfYear()])->count();
+        $ganhosAno = $agendamentos->whereBetween('data_agendamento', [now()->startOfYear(), now()->endOfYear()])
+            ->sum(function ($agendamento) {
+                return $agendamento->servico ? $agendamento->servico->valor : 0;
+            });
+
+        return Inertia::render('Admin/Dashboard', [
+            'agendamentosSemana' => $agendamentosSemana,
+            'ganhosSemana' => $ganhosSemana,
+            'agendamentosMes' => $agendamentosMes,
+            'ganhosMes' => $ganhosMes,
+            'agendamentosAno' => $agendamentosAno,
+            'ganhosAno' => $ganhosAno,
+            'servicos' => $servicos
+        ]);
     }
 
-    
+
+
     public function index()
     {
         $this->authorize('viewAny', Agendamento::class);
@@ -75,6 +105,7 @@ class AdminController extends Controller
             'celular' => $request->celular,
             'data_agendamento' => $request->data_agendamento,
             'hora' => $request->hora,
+            'status' => $request->status
         ]);
 
         $horasDisponiveis = $this->getHorasDisponiveis($request->data_agendamento);

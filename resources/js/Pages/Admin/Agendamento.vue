@@ -10,7 +10,7 @@ const props = defineProps({
     horasDisponiveis: Array,
 });
 
-const hoje = new Date().toISOString().split('T')[0]; 
+const hoje = new Date().toISOString().split('T')[0];
 const dataMinima = ref(hoje);
 
 const goToPage = (page) => {
@@ -137,7 +137,7 @@ const updateAgendamento = () => {
                                     <td class="px-4 py-2">{{ agendamento.hora }}</td>
                                     <td class="px-4 py-2">{{ agendamento.status }}</td>
                                     <td class="px-4 py-2">
-                                        <button @click="openModalEdicao(agendamento)" 
+                                        <button @click="openModalEdicao(agendamento)"
                                             class="px-4 mr-2 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
                                             Editar
                                         </button>
@@ -204,7 +204,8 @@ const updateAgendamento = () => {
 
                     <div class="mb-4">
                         <label for="data_agendamento" class="block text-sm font-medium text-pink-700">Data</label>
-                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento" :min="dataMinima"
+                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento"
+                            :min="dataMinima"
                             class="mt-1 block w-full px-3 py-2 border bg-pink-50 border-pink-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
 
@@ -216,6 +217,17 @@ const updateAgendamento = () => {
                             <option v-for="hora in horasDisponiveisModal" :key="hora" :value="hora">
                                 {{ hora }}
                             </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="status" class="block text-sm font-medium text-pink-700">Status</label>
+                        <select v-model="selectedAgendamento.status" id="status"
+                            class="mt-1 block w-full px-3 py-2 border border-pink-300 bg-pink-50 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">Selecione o Status</option>
+                            <option value="Pendente">pendente</option>
+                            <option value="Confirmado">confirmado</option>
+                            <option value="Cancelado">cancelado</option>
                         </select>
                     </div>
 
