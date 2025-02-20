@@ -9,11 +9,10 @@ const props = defineProps({
     agendamentos: Object,
     servicos: Array,
     horasDisponiveis: Array,
-    errors: {
-        type: Object,
-        default: () => ({})
-    }
 });
+
+const hoje = new Date().toISOString().split('T')[0]; 
+const dataMinima = ref(hoje);
 
 const temMultiplosAgendamentosNaSemana = computed(() => {
     if (!props.agendamentos || !Array.isArray(props.agendamentos.data)) {
@@ -109,7 +108,7 @@ const deleteAgendamento = (id, dataAgendamento) => {
     });
 };
 
-const openModal = (agendamento) => {
+const openModalEdicao = (agendamento) => {
     const hoje = new Date();
     const dataAgendamento = new Date(agendamento.data_agendamento);
     const diffTime = dataAgendamento - hoje;
@@ -124,7 +123,6 @@ const openModal = (agendamento) => {
         ...agendamento,
         data_agendamento: agendamento.data_agendamento.split('T')[0]
     };
-    showModal.value = true;
     showModal.value = true;
 };
 
@@ -190,7 +188,7 @@ const updateAgendamento = () => {
                                     <td class="px-4 py-2">{{ agendamento.hora }}</td>
                                     <td class="px-4 py-2">{{ agendamento.status }}</td>
                                     <td class="px-4 py-2">
-                                        <button @click="openModal(agendamento)"
+                                        <button @click="openModalEdicao(agendamento)"
                                             class="px-4 mr-2 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
                                             Editar
                                         </button>
@@ -256,7 +254,7 @@ const updateAgendamento = () => {
 
                     <div class="mb-4">
                         <label for="data_agendamento" class="block text-sm font-medium text-pink-700">Data</label>
-                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento"
+                        <input v-model="selectedAgendamento.data_agendamento" type="date" id="data_agendamento" :min="dataMinima"
                             class="mt-1 block w-full px-3 py-2 border bg-pink-50 border-pink-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
 

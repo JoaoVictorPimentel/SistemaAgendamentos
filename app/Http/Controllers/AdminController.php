@@ -21,43 +21,18 @@ class AdminController extends Controller
     {
         $this->authorize('viewAny', Agendamento::class);
 
-        $agendamentos = Agendamento::with(['servico', 'user'])->orderBy('data_agendamento', 'desc')->paginate(10);
+        $servicos = Servico::all();
+
+        $horasDisponiveis = $this->getTodasHoras();
+
+        $agendamentos = Agendamento::with(['servico', 'user'])
+            ->orderBy('data_agendamento', 'desc')
+            ->orderBy('hora', 'desc')
+            ->paginate(10);
         return Inertia::render('Admin/Agendamento', [
             'agendamentos' => $agendamentos,
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $this->authorize('create', Agendamento::class);
-
-        $request->validate([
-            'servico_id' => 'required|exists:servicos,id',
-            'nome_cliente' => 'required|string|max:255',
-            'celular' => 'required|string|max:20',
-            'data_agendamento' => 'required|date',
-            'hora' => 'required',
-        ]);
-
-        Agendamento::create([
-            'servico_id' => $request->servico_id,
-            'user_id' => Auth::id(),
-            'nome_cliente' => $request->nome_cliente,
-            'celular' => $request->celular,
-            'data_agendamento' => $request->data_agendamento,
-            'hora' => $request->hora,
-        ]);
-
-        return redirect()->route('admin.agendamentos.index')->with('success', 'Agendamento criado com sucesso!');
-    }
-
-    public function show(Agendamento $agendamento)
-    {
-        $this->authorize('view', $agendamento);
-
-        $agendamento->load(['servico', 'user']);
-        return Inertia::render('Admin/Agendamentos/Show', [
-            'agendamento' => $agendamento,
+            'servicos' => $servicos,
+            'horasDisponiveis' => $horasDisponiveis
         ]);
     }
 
@@ -67,11 +42,32 @@ class AdminController extends Controller
 
         $request->validate([
             'servico_id' => 'required|exists:servicos,id',
-            'nome_cliente' => 'required|string|max:255',
+            'nome_cliente' => 'required|string|max:80',
             'celular' => 'required|string|max:20',
             'data_agendamento' => 'required|date',
-            'hora' => 'required',
+            'hora' => 'required|in:' . implode(',', $this->getTodasHoras()),
+        ], [
+            'servico_id.required' => 'O campo serviço é obrigatório.',
+            'nome_cliente.required' => 'O campo nome do cliente é obrigatório.',
+            'nome_cliente.string' => 'O nome do cliente deve ser uma string válida.',
+            'nome_cliente.max' => 'O nome do cliente não pode ter mais de 80 caracteres.',
+            'celular.required' => 'O campo celular é obrigatório.',
+            'celular.string' => 'O celular deve ser uma string válida.',
+            'celular.max' => 'O celular não pode ter mais de 20 caracteres.',
+            'data_agendamento.required' => 'A data do agendamento é obrigatória.',
+            'data_agendamento.date' => 'A data fornecida não é válida.',
+            'hora.required' => 'A hora do agendamento é obrigatória.',
+            'hora.in' => 'A hora selecionada não é válida.',
         ]);
+
+        $agendamentoExistente = Agendamento::whereDate('data_agendamento', $request->data_agendamento)
+            ->where('hora', $request->hora)
+            ->where('id', '!=', $agendamento->id)
+            ->exists();
+
+        if ($agendamentoExistente) {
+            return redirect()->back()->with('error', 'Já existe um agendamento nesse horário.');
+        }
 
         $agendamento->update([
             'servico_id' => $request->servico_id,
@@ -81,7 +77,10 @@ class AdminController extends Controller
             'hora' => $request->hora,
         ]);
 
-        return redirect()->route('admin.agendamentos.index')->with('success', 'Agendamento atualizado com sucesso!');
+        $horasDisponiveis = $this->getHorasDisponiveis($request->data_agendamento);
+
+        return redirect()->back()->with('success', 'Agendamento atualizado com sucesso!')
+            ->with('horasDisponiveis', $horasDisponiveis);
     }
 
     public function destroy(Agendamento $agendamento)
@@ -90,6 +89,47 @@ class AdminController extends Controller
 
         $agendamento->delete();
 
-        return redirect()->route('admin.agendamentos.index')->with('success', 'Agendamento excluído com sucesso!');
+        return redirect()->route('admin.agendamento')->with('success', 'Agendamento excluído com sucesso!');
+    }
+
+    private function getTodasHoras()
+    {
+        return [
+            '08:00',
+            '09:00',
+            '10:00',
+            '11:00',
+            '12:00',
+            '13:00',
+            '14:00',
+            '15:00',
+            '16:00',
+            '17:00'
+        ];
+    }
+
+    private function getHorasDisponiveis($dataAgendamento)
+    {
+        $todasHoras = $this->getTodasHoras();
+
+        $agendamentos = Agendamento::where('data_agendamento', $dataAgendamento)
+            ->pluck('hora')
+            ->toArray();
+
+        $horasDisponiveis = array_diff($todasHoras, $agendamentos);
+
+        return array_values($horasDisponiveis);
+    }
+
+    public function getHorasDisponiveisPorData(Request $request)
+    {
+        $request->validate([
+            'data_agendamento' => 'required|date',
+        ]);
+
+        $dataAgendamento = $request->input('data_agendamento');
+        $horasDisponiveis = $this->getHorasDisponiveis($dataAgendamento);
+
+        return response()->json($horasDisponiveis);
     }
 }
