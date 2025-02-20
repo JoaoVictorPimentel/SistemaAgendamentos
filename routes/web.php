@@ -38,6 +38,8 @@ Route::prefix('usuario')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [UsuarioController::class, 'dashboard'])->name('usuario.dashboard');
     Route::get('/agendamento', [UsuarioController::class, 'index'])->name('usuario.agendamento');
     Route::post('/agendamento', [UsuarioController::class, 'store'])->name('usuario.agendamento.store');
+    Route::delete('/agendamento/{agendamento}', [UsuarioController::class, 'destroy'])->name('usuario.agendamento.destroy');
+    Route::put('/agendamento/{agendamento}', [UsuarioController::class, 'update'])->name('usuario.agendamento.update');
 });
 
 Route::get('/api/horarios-disponiveis', [UsuarioController::class, 'getHorasDisponiveisPorData'])->name('api.horarios-disponiveis');
