@@ -29,7 +29,8 @@ Route::get('/agendamento', function () {
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/agendamento', [AdminController::class, 'index'])->name('admin.agendamento');
-    
+    Route::delete('/agendamento/{agendamento}', [AdminController::class, 'destroy'])->name('admin.agendamento.destroy');
+    Route::put('/agendamento/{agendamento}', [AdminController::class, 'update'])->name('admin.agendamento.update');
 });
 
 

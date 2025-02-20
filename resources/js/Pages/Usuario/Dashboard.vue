@@ -23,6 +23,8 @@ const form = useForm({
     hora: '',
 });
 
+const hoje = new Date().toISOString().split('T')[0]; 
+const dataMinima = ref(hoje);
 const loading = ref(false);
 const horasDisponiveis = ref([]);
 
@@ -124,7 +126,7 @@ const submit = () => {
 
                             <div class="mb-4">
                                 <label for="data_agendamento" class="block text-sm font-medium text-pink-700">Data de Agendamento</label>
-                                <input v-model="form.data_agendamento" type="date" id="data_agendamento"
+                                <input v-model="form.data_agendamento" type="date" id="data_agendamento" :min="dataMinima"
                                     class="mt-1 block w-full px-3 py-2 border border-pink-300 bg-pink-50 text-gray-900 focus:ring-pink-500 focus:border-pink-500 rounded-lg sm:text-sm" />
                                 <span v-if="errors.data_agendamento" class="text-red-500 text-xs">{{ errors.data_agendamento }}</span>
                             </div>

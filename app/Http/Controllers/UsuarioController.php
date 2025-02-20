@@ -27,7 +27,6 @@ class UsuarioController extends Controller
     {
         $user = auth()->user();
 
-        // Carregar serviços
         $servicos = Servico::all();
 
         $agendamentos = Agendamento::where('user_id', $user->id)
@@ -133,7 +132,6 @@ class UsuarioController extends Controller
             'celular' => $request->celular,
             'data_agendamento' => $request->data_agendamento,
             'hora' => $request->hora,
-            'status' => $request->status,
         ]);
 
         $horasDisponiveis = $this->getHorasDisponiveis($request->data_agendamento);
