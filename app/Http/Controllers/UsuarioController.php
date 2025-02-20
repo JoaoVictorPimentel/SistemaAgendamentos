@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,14 +27,20 @@ class UsuarioController extends Controller
     {
         $user = auth()->user();
 
+        // Carregar serviços
+        $servicos = Servico::all();
+
         $agendamentos = Agendamento::where('user_id', $user->id)
             ->with('servico', 'user')
             ->orderBy('data_agendamento', 'desc')
+            ->orderBy('hora', 'desc')
             ->paginate(10);
 
         return Inertia::render('Usuario/Agendamento', [
             'agendamentos' => $agendamentos,
+            'servicos' => $servicos,
         ]);
+
     }
 
     public function store(Request $request)
@@ -47,7 +52,7 @@ class UsuarioController extends Controller
             'nome_cliente' => 'required|string|max:80',
             'celular' => 'required|string|max:20',
             'data_agendamento' => 'required|date',
-            'hora' => 'required|in:' . implode(',', $this->getTodasHoras()), // Validação conforme o enum
+            'hora' => 'required|in:' . implode(',', $this->getTodasHoras()),
         ], [
             'servico_id.required' => 'O campo serviço é obrigatório.',
             'nome_cliente.required' => 'O campo nome do cliente é obrigatório.',
@@ -81,7 +86,6 @@ class UsuarioController extends Controller
             'hora' => $request->hora,
         ]);
 
-
         $horasDisponiveis = $this->getHorasDisponiveis($request->data_agendamento);
 
         return redirect()->back()
@@ -95,19 +99,24 @@ class UsuarioController extends Controller
 
         $request->validate([
             'servico_id' => 'required|exists:servicos,id',
-            'nome_cliente' => 'required|string|max:255',
+            'nome_cliente' => 'required|string|max:80',
             'celular' => 'required|string|max:20',
             'data_agendamento' => 'required|date',
-            'hora' => 'required',
-            'status' => 'required|in:pendente,confirmado,cancelado',
+            'hora' => 'required|in:' . implode(',', $this->getTodasHoras()),
+        ], [
+            'servico_id.required' => 'O campo serviço é obrigatório.',
+            'nome_cliente.required' => 'O campo nome do cliente é obrigatório.',
+            'nome_cliente.string' => 'O nome do cliente deve ser uma string válida.',
+            'nome_cliente.max' => 'O nome do cliente não pode ter mais de 80 caracteres.',
+            'celular.required' => 'O campo celular é obrigatório.',
+            'celular.string' => 'O celular deve ser uma string válida.',
+            'celular.max' => 'O celular não pode ter mais de 20 caracteres.',
+            'data_agendamento.required' => 'A data do agendamento é obrigatória.',
+            'data_agendamento.date' => 'A data fornecida não é válida.',
+            'hora.required' => 'A hora do agendamento é obrigatória.',
+            'hora.in' => 'A hora selecionada não é válida.',
         ]);
 
-        $dataAgendamento = Carbon::parse($request->data_agendamento);
-        $dataAtual = Carbon::now();
-
-        if ($dataAgendamento->diffInDays($dataAtual) < 2) {
-            return redirect()->route('usuario.agendamentos.index')->with('error', 'Você só pode editar agendamentos com mais de 2 dias de antecedência.');
-        }
 
         $agendamentoExistente = Agendamento::whereDate('data_agendamento', $request->data_agendamento)
             ->where('hora', $request->hora)
@@ -127,7 +136,10 @@ class UsuarioController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->back()->with('success', 'Agendamento realizado com sucesso!');
+        $horasDisponiveis = $this->getHorasDisponiveis($request->data_agendamento);
+
+        return redirect()->back()->with('success', 'Agendamento atualizado com sucesso!')
+            ->with('horasDisponiveis', $horasDisponiveis);
     }
 
 
@@ -136,12 +148,12 @@ class UsuarioController extends Controller
         $this->authorize('delete', $agendamento);
 
         if ($agendamento->user_id !== Auth::id()) {
-            return redirect()->route('usuario.agendamentos.index')->with('error', 'Você não tem permissão para excluir esse agendamento.');
+            return redirect()->route('usuario.agendamento')->with('error', 'Você não tem permissão para excluir esse agendamento.');
         }
 
         $agendamento->delete();
 
-        return redirect()->route('usuario.agendamentos.index')->with('success', 'Agendamento excluído com sucesso!');
+        return redirect()->route('usuario.agendamento')->with('success', 'Agendamento excluído com sucesso!');
     }
 
     private function getTodasHoras()
@@ -162,18 +174,15 @@ class UsuarioController extends Controller
 
     private function getHorasDisponiveis($dataAgendamento)
     {
-        // Lista fixa de horas (conforme o enum)
         $todasHoras = $this->getTodasHoras();
 
-        // Busca os agendamentos existentes para a data selecionada
         $agendamentos = Agendamento::where('data_agendamento', $dataAgendamento)
             ->pluck('hora')
             ->toArray();
 
-        // Remove as horas já agendadas
         $horasDisponiveis = array_diff($todasHoras, $agendamentos);
 
-        return array_values($horasDisponiveis); // Reindexa o array
+        return array_values($horasDisponiveis);
     }
 
     public function getHorasDisponiveisPorData(Request $request)
@@ -187,5 +196,4 @@ class UsuarioController extends Controller
 
         return response()->json($horasDisponiveis);
     }
-
 }
