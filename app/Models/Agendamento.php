@@ -8,6 +8,9 @@ class Agendamento extends Model
 {
     protected $table = 'agendamentos';
 
+    protected $casts = [
+        'data_agendamento' => 'date'
+    ];
     protected $primaryKey = 'id';
     protected $fillable = [
         'servico_id',

@@ -25,42 +25,26 @@ Route::get('/agendamento', function () {
 })->middleware(['auth', 'verified'])->name('agendamento');
 
 
+// Rotas para o Admin
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/agendamento', [AdminController::class, 'index'])->name('admin.agendamento');
+    
+});
 
 
+//Rotas usuario
+Route::prefix('usuario')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [UsuarioController::class, 'dashboard'])->name('usuario.dashboard');
+    Route::get('/agendamento', [UsuarioController::class, 'index'])->name('usuario.agendamento');
+    Route::post('/agendamento', [UsuarioController::class, 'store'])->name('usuario.agendamento.store');
+});
 
-
-
-
+Route::get('/api/horarios-disponiveis', [UsuarioController::class, 'getHorasDisponiveisPorData'])->name('api.horarios-disponiveis');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
-
-
-
-
-
-
-
-
-// Rotas para o Admin
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/agendamento', [AdminController::class, 'index'])->name('admin.agendamento');
-});
-
-Route::prefix('usuario')->middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [UsuarioController::class, 'dashboard'])->name('usuario.dashboard');
-    Route::get('/agendamento', [UsuarioController::class, 'index'])->name('usuario.agendamento');
-});
-
-
-
-// Rotas para usuário 
-Route::get('usuario/dashboard', [UsuarioController::class, 'dashboard'])->middleware('auth')->name('usuario.dashboard');
-
 require __DIR__.'/auth.php';
