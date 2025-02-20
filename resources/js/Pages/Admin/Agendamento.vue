@@ -19,7 +19,7 @@ const goToPage = (page) => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
+            <h2 class="text-xl font-semibold leading-tight text-pink-700">
                 Agendamentos
             </h2>
         </template>
@@ -27,7 +27,7 @@ const goToPage = (page) => {
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+                    <div class="p-6 text-pink-900">
                         <!-- Tabela de Agendamentos -->
                         <table class="min-w-full table-auto">
                             <thead>
@@ -50,15 +50,17 @@ const goToPage = (page) => {
                                     <td class="px-4 py-2">{{ agendamento.celular }}</td>
                                     <td class="px-4 py-2">{{ new
                                         Date(agendamento.data_agendamento).toLocaleDateString('pt-BR')
-                                        }}</td>
+                                    }}</td>
                                     <td class="px-4 py-2">{{ agendamento.hora }}</td>
                                     <td class="px-4 py-2">{{ agendamento.status }}</td>
                                     <td class="px-4 py-2">
-                                        <button
-                                            class="px-4 mr-2 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Editar</button>
+                                        <button class="px-4 mr-2 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">
+                                            Editar
+                                        </button>
 
-                                        <button
-                                            class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Excluir</button>
+                                        <button class="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-red-400">
+                                            Excluir
+                                        </button>
 
                                     </td>
                                 </tr>
@@ -69,7 +71,7 @@ const goToPage = (page) => {
                         <div class="flex justify-between mt-4">
                             <button @click="goToPage(agendamentos.current_page - 1)"
                                 :disabled="agendamentos.current_page === 1"
-                                class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                                class="px-4 py-2 bg-pink-300 text-pink-800 rounded hover:bg-pink-400">
                                 Anterior
                             </button>
 
@@ -79,7 +81,7 @@ const goToPage = (page) => {
 
                             <button @click="goToPage(agendamentos.current_page + 1)"
                                 :disabled="agendamentos.current_page === agendamentos.last_page"
-                                class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+                                class="px-4 py-2 bg-pink-300 text-pink-800 rounded hover:bg-pink-400">
                                 Próxima
                             </button>
                         </div>
